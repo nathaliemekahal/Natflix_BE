@@ -12,8 +12,9 @@ const {
   } = require("./errorHandlers")
 
 const server=express()
-server.use(cors());
+
 const port = process.env.PORT
+server.use(cors());
 server.use(express.json())
 server.use('/media',mediaRouter)
 server.use('/reviews',reviewsRouter)
