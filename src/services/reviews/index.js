@@ -21,7 +21,7 @@ reviewsRouter.get('/',async(req,res)=>{
 reviewsRouter.get('/:id',async(req,res)=>{
     try {
         let reviews=await readDB(reviewsJsonPath)
-        let filteredArray= reviews.filter(review=>review._id===req.params.id)
+        let filteredArray= reviews.filter(review=>review.elementId===req.params.id)
       
         res.send(filteredArray)
       

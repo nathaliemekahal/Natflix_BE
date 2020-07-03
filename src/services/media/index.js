@@ -1,9 +1,17 @@
 //LIBRARIES
 const express=require('express')
 const path =require('path')
-
+const uniqid=require('uniqid')
 const fs= require('fs-extra')
 const {writeDB,readDB}=require('../../utilities')
+const PDFDocument = require("pdfkit");
+const axios = require("axios");
+const {
+    readFile,
+    writeFile,
+    createReadStream,
+    createWriteStream,
+  } = require("fs-extra");
 
 
 //JSON PATH
@@ -13,9 +21,28 @@ const mediaRouter=express.Router()
 
 //APIS
 
-mediaRouter.get('/',async(req,res)=>{
+mediaRouter.get('/',async(req,res,next)=>{
+    
+
+        
+    
     try {
+        
         let moviesArray= await readDB(mediaJsonPath)
+       
+        if(Object.keys(req.query).length!==0){
+            // for(let i=0;i<Object.keys(req.query).length;i++){
+             
+         let result=moviesArray.filter(movie=>movie[Object.keys(req.query)].includes(req.query[Object.keys(req.query)]))
+                
+            // }
+            res.send(result)
+        }
+    
+        // if(Object.keys(req.query).length!==0){
+        //     console.log([Object.keys(req.query)])
+        // }
+
         res.send(moviesArray)
     } catch (error) {
         const err=new Error('PROBLEM WITH GET')
@@ -24,14 +51,27 @@ mediaRouter.get('/',async(req,res)=>{
 })
 mediaRouter.get('/:id',async(req,res,next)=>{
     try {
-        let moviesArray= await readDB(mediaJsonPath)
+        
+       
         let filteredArray= moviesArray.filter(movie=>movie.imdbID===req.params.id)
       
         res.send(filteredArray)
+        
     } catch (error) {
         const err=new Error('PROBLEM WITH GET')
         next(err)
     }
+})
+mediaRouter.get('/alldetails/:id',async(req,res,next)=>{
+    console.log('hi')
+    console.log(req.params.id)
+    const response = await axios({
+        method: "get",
+        url: "http://www.omdbapi.com/?i="+req.params.id+"&apikey=8ad00066 " ,
+       
+        
+      });
+      res.send(response.data)
 })
 
 mediaRouter.post('/',async(req,res,next)=>{
@@ -82,6 +122,28 @@ mediaRouter.delete('/:id', async(req,res,next)=>{
         next(err)
     }
 })
+mediaRouter.post('/media/catalogue',async(req,res)=>{
+    let moviesArray=await readDB(mediaJsonPath)
+    let title= req.query.title
+    let filteredArray=moviesArray.filter(movie=> movie.Title.toLowerCase().includes(title))
+    res.send(filteredArray)
+
+    const doc = new PDFDocument();
+    
+  doc.pipe(createWriteStream("new.pdf"));
+for(let i=0;i<filteredArray.length;i++){
+    doc
+    .font("public/fonts/PalatinoBold.ttf")
+    .fontSize(20)
+    .text(
+      "NAME" + i +': ' + JSON.stringify(filteredArray[i].Title).replace(/"/g, ""),
+      100,
+      i*50+100
+    );
+}
+ 
+  doc.end();
+}) 
 
 
 module.exports = mediaRouter
