@@ -19,9 +19,10 @@ mediaRouter.get('/',async(req,res)=>{
         res.send(moviesArray)
     } catch (error) {
         const err=new Error('PROBLEM WITH GET')
+        next(err)
     }
 })
-mediaRouter.get('/:id',async(req,res)=>{
+mediaRouter.get('/:id',async(req,res,next)=>{
     try {
         let moviesArray= await readDB(mediaJsonPath)
         let filteredArray= moviesArray.filter(movie=>movie.imdbID===req.params.id)
@@ -29,10 +30,18 @@ mediaRouter.get('/:id',async(req,res)=>{
         res.send(filteredArray)
     } catch (error) {
         const err=new Error('PROBLEM WITH GET')
+        next(err)
     }
 })
 
-mediaRouter.post('/',async(req,res)=>{
+mediaRouter.post('/',async(req,res,next)=>{
+    // const errors = validationResult(req)
+    // if (!errors.isEmpty()) {
+    //   const error = new Error()
+    //   error.httpStatusCode = 400
+    //   error.message = errors
+    //   next(error)
+    // }
     try {
         let moviesArray=await readDB(mediaJsonPath)
         console.log({...req.body})
@@ -41,11 +50,12 @@ mediaRouter.post('/',async(req,res)=>{
         await writeDB(mediaJsonPath,moviesArray)
         res.status(201).send(req.body)
     } catch (error) {
-        const err=new Error('PROBLEM WITH POST')
+        
+        next(err)
     }
 })
 
-mediaRouter.put('/:id',async(req,res)=>{
+mediaRouter.put('/:id',async(req,res,next)=>{
     try {
         let moviesArray=await readDB(mediaJsonPath)
         let index=moviesArray.findIndex(movie=>movie.imdbID===req.params.id)
@@ -58,9 +68,10 @@ mediaRouter.put('/:id',async(req,res)=>{
         res.send('Ok')
     } catch (error) {
         const err=new Error('PROBLEM WITH PUT')
+        next(err)
     }
 })
-mediaRouter.delete('/:id', async(req,res)=>{
+mediaRouter.delete('/:id', async(req,res,next)=>{
     try {
         let moviesArray=await readDB(mediaJsonPath)
         let filteredArray=moviesArray.filter(movie=>movie.imdbID!==req.params.id)
@@ -68,6 +79,7 @@ mediaRouter.delete('/:id', async(req,res)=>{
         res.send('deleted')
     } catch (error) {
         const err=new Error('PROBLEM WITH DELETE')
+        next(err)
     }
 })
 
